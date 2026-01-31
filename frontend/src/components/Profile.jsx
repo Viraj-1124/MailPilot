@@ -121,7 +121,7 @@ const Profile = () => {
         <div className={styles.container}>
             <header className={styles.header}>
                 <h1 className={styles.title}>Your Profile</h1>
-                <p style={{ color: 'var(--text-secondary)' }}>Manage your personal AI assistant settings</p>
+                <p className={styles.subtitle}>Manage your personal AI assistant settings</p>
             </header>
 
             <div className={styles.tabs}>

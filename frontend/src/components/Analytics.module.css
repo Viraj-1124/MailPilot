@@ -2,6 +2,7 @@
     padding: var(--spacing-xl);
     overflow-y: auto;
     height: 100%;
+    /* Add subtle gradient to bg if transparent */
 }
 
 .header {
@@ -9,8 +10,17 @@
 }
 
 .title {
-    font-size: 1.875rem;
+    font-size: 2rem;
     font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.02em;
+    margin-bottom: var(--spacing-xs);
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    max-width: 600px;
 }
 
 .grid {
@@ -26,6 +36,13 @@
     border-radius: var(--radius-lg);
     border: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-focus);
 }
 
 .cardHeader {
@@ -39,6 +56,8 @@
     color: var(--text-secondary);
     font-size: 0.875rem;
     font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .cardValue {
@@ -58,11 +77,14 @@
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
 }
 
 .chartCard h3 {
     margin-bottom: var(--spacing-lg);
     font-size: 1.1rem;
+    color: var(--text-main);
+    font-weight: 600;
 }
 
 .barChart {
@@ -94,7 +116,7 @@
 .barFill {
     height: 100%;
     border-radius: var(--radius-full);
-    transition: width 0.5s ease-out;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .barValue {
@@ -102,4 +124,5 @@
     text-align: right;
     font-size: 0.875rem;
     font-weight: 600;
+    color: var(--text-main);
 }

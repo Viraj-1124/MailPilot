@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { api } from '../services/api'; // Ensure API is imported
 import { useAuth } from '../auth/AuthContext';
-import { Star, Clock, AlertCircle, Plus, RotateCw, Volume2, Square, ThumbsUp, ThumbsDown, Sparkles } from 'lucide-react'; // Added Plus, RotateCw, Feedback Icons
+import { Star, Clock, AlertCircle, Plus, RotateCw, Volume2, Square, ThumbsUp, ThumbsDown, Sparkles, Inbox } from 'lucide-react'; // Added Plus, RotateCw, Feedback Icons
 import styles from './EmailList.module.css';
 import SkeletonEmail from './SkeletonEmail';
 import { useToast } from './Toast';
@@ -116,7 +116,7 @@ const EmailList = ({ type = 'inbox', onSelectEmail, onCompose }) => {
                         <div className={styles.subtitle}>
                             {summary && (
                                 <div className={styles.aiSummary} style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
-                                    <span style={{ flex: 1 }}>✨ AI Summary: {summary}</span>
+                                    <span style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}><Sparkles size={16} className="text-primary" /> AI Summary: {summary}</span>
                                     {/* Text-to-Speech Control: Plays AI summary using browser native API */}
                                     {isSupported && (
                                         <button
@@ -240,7 +240,7 @@ const EmailList = ({ type = 'inbox', onSelectEmail, onCompose }) => {
                 ) : emails.length === 0 ? (
                     <div className={styles.empty}>
                         <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--text-tertiary)' }}>
-                            <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>📭</div>
+                            <div style={{ marginBottom: '1rem', opacity: 0.5, color: 'var(--text-tertiary)' }}><Inbox size={64} strokeWidth={1} /></div>
                             <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
                                 Nothing in {filterLabel}
                             </h3>

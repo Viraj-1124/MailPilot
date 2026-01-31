@@ -22,7 +22,7 @@ const Login = () => {
     return (
         <div className={styles.container}>
             <div className={styles.card}>
-                <h1 className={styles.title}>mAiL</h1>
+                <h1 className={styles.title}>EmailPilot</h1>
                 <p className={styles.tagline}>
                     AI-powered Gmail assistant that summarizes, prioritizes, and replies for you.
                 </p>

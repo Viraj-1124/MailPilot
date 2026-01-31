@@ -22,7 +22,7 @@ const Sidebar = () => {
     return (
         <aside className={styles.sidebar}>
             <div className={styles.header}>
-                <div className={styles.logo}>mAiL</div>
+                <div className={styles.logo}>EmailPilot</div>
             </div>
 
             <nav className={styles.nav}>

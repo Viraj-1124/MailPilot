@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../auth/AuthContext';
-import { X, ArrowLeft, CornerUpLeft, Send, Sparkles, Save, Clock, ClipboardList, Calendar, Bell } from 'lucide-react';
+import { X, ArrowLeft, CornerUpLeft, Send, Sparkles, Save, Clock, ClipboardList, Calendar, Bell, Archive, Inbox, Trash2, RotateCcw, Paperclip } from 'lucide-react';
 
 import styles from './EmailDetail.module.css';
 
@@ -199,16 +199,16 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
                                     await api.unarchiveEmail(emailId);
                                     if (onActionComplete) onActionComplete();
                                     else onClose();
-                                }} style={{ background: 'none', border: 'none', cursor: 'pointer', marginRight: '8px' }}>
-                                    📤
+                                }} className="icon-btn" style={{ marginRight: '8px' }}>
+                                    <Inbox size={18} />
                                 </button>
                             ) : (
                                 <button title="Archive" onClick={async () => {
                                     await api.archiveEmail(emailId);
                                     if (onActionComplete) onActionComplete();
                                     else onClose();
-                                }} style={{ background: 'none', border: 'none', cursor: 'pointer', marginRight: '8px' }}>
-                                    📥
+                                }} className="icon-btn" style={{ marginRight: '8px' }}>
+                                    <Archive size={18} />
                                 </button>
                             )}
 
@@ -218,8 +218,8 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
                                     await api.restoreEmail(emailId);
                                     if (onActionComplete) onActionComplete();
                                     else onClose();
-                                }} style={{ background: 'none', border: 'none', cursor: 'pointer', marginRight: '16px', color: 'green' }}>
-                                    ♻️
+                                }} className="icon-btn" style={{ marginRight: '16px', color: 'var(--success)' }}>
+                                    <RotateCcw size={18} />
                                 </button>
                             ) : (
                                 <button title="Delete" onClick={async () => {
@@ -228,8 +228,8 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
                                         if (onActionComplete) onActionComplete();
                                         else onClose();
                                     }
-                                }} style={{ background: 'none', border: 'none', cursor: 'pointer', marginRight: '16px', color: 'red' }}>
-                                    🗑️
+                                }} className="icon-btn" style={{ marginRight: '16px', color: 'var(--danger)' }}>
+                                    <Trash2 size={18} />
                                 </button>
                             )}
 
@@ -300,7 +300,7 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
                             <div className={styles.attachments}>
                                 {email.attachments.map((att, i) => (
                                     <div key={i} className={styles.attachment}>
-                                        <span>📎 {att.filename}</span>
+                                        <span><Paperclip size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} /> {att.filename}</span>
                                         <span className={styles.size}>{Math.round(att.size / 1024)}KB</span>
                                     </div>
                                 ))}

@@ -41,6 +41,7 @@ const Analytics = () => {
         <div className={styles.container}>
             <header className={styles.header}>
                 <h1 className={styles.title}>Analytics Dashboard</h1>
+                <p className={styles.subtitle}>Track your email habits and productivity metrics.</p>
             </header>
 
             <div className={styles.grid}>
