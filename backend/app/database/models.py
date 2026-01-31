@@ -102,3 +102,4 @@ class EmailTask(Base):
     source = Column(String, default="ai")
     created_at = Column(DateTime, server_default=func.now())
     completed = Column(Boolean, default=False)
+    calendar_event_id = Column(String, nullable=True)

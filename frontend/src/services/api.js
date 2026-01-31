@@ -122,4 +122,6 @@ export const api = {
     toggleTaskCompletion: (taskId) => request(`/tasks/${taskId}/complete`, { method: 'PATCH' }),
 
     getUserTasks: (userEmail) => request(`/tasks?user_email=${userEmail}`),
+
+    addToCalendar: (taskId) => request(`/tasks/${taskId}/add-to-calendar`, { method: 'POST' }),
 };

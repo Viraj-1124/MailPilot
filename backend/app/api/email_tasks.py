@@ -191,3 +191,91 @@ def toggle_task_completion(
         traceback.print_exc()
         print(f"Task update failed: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to update task: {str(e)}")
+
+
+@router.post("/tasks/{task_id}/add-to-calendar")
+def add_task_to_calendar(
+    task_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Add a task to Google Calendar.
+    """
+    from app.services.gmail_service import get_calendar_service
+    from datetime import timedelta
+
+    # 1. Fetch Task & Verify Ownership
+    task = db.query(EmailTask).filter(EmailTask.id == task_id).first()
+    
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+        
+    if task.user_email != current_user.email:
+        raise HTTPException(status_code=403, detail="Not authorized to access this task")
+
+    if task.calendar_event_id:
+        return {"success": False, "message": "Task already added to calendar", "calendar_event_link": None}
+
+    # 2. Authenticate Calendar Service
+    try:
+        service = get_calendar_service(current_user.email)
+        if not service:
+             raise HTTPException(status_code=401, detail="Google authentication failed. Please re-login.")
+    except Exception as e:
+        print(f"Calendar auth error: {e}")
+        raise HTTPException(status_code=401, detail="Google authentication failed")
+
+    # 3. Calculate Start/End
+    if task.deadline:
+        start_time = task.deadline
+        description_suffix = ""
+    else:
+        # Default to 1 hour from now if no deadline
+        start_time = datetime.now() + timedelta(hours=1)
+        description_suffix = "\n(No deadline specified in email, scheduled for +1h)"
+
+    end_time = start_time + timedelta(hours=1)
+
+    # 4. Create Event Body
+    event_body = {
+        'summary': task.task_text,
+        'description': f"Created by mAiL from email task.{description_suffix}\nSource: {task.source}",
+        'start': {
+            'dateTime': start_time.isoformat(),
+            'timeZone': 'UTC', # Adjust if we had user timezone
+        },
+        'end': {
+            'dateTime': end_time.isoformat(),
+            'timeZone': 'UTC',
+        },
+    }
+
+    # 5. Insert Event
+    try:
+        event = service.events().insert(calendarId='primary', body=event_body).execute()
+        
+        # 6. Update Task
+        task.calendar_event_id = event.get('id')
+        db.commit()
+        db.refresh(task)
+
+        return {
+            "success": True,
+            "calendar_event_link": event.get('htmlLink')
+        }
+
+    except Exception as e:
+        db.rollback()
+        print(f"Calendar API Error: {e}")
+        
+        # Check if it's a permissions error
+        # Google API errors are often JSON strings inside the exception message or HttpError objects
+        error_str = str(e)
+        if "insufficientPermissions" in error_str or "Insufficient Permission" in error_str:
+             raise HTTPException(
+                 status_code=403, 
+                 detail="Insufficient permissions. Please Log Out and Log In again to grant Calendar access."
+             )
+             
+        raise HTTPException(status_code=500, detail=f"Failed to add to calendar: {str(e)}")

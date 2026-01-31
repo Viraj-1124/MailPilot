@@ -126,7 +126,7 @@ const TaskItem = ({ task, onToggle }) => {
                 <div className={styles.metaRow}>
                     {task.deadline && (
                         <div className={`${styles.metaItem} ${isDueSoon && !task.completed ? styles.dueSoon : ''}`}>
-                            <Calendar size={12} />
+                            <Clock size={12} />
                             {new Date(task.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </div>
                     )}
@@ -139,9 +139,69 @@ const TaskItem = ({ task, onToggle }) => {
                             AI Extracted
                         </div>
                     )}
+                     <AddToCalendarBtn taskId={task.id} calendarEventId={task.calendar_event_id} />
                 </div>
             </div>
         </div>
+    );
+};
+
+const AddToCalendarBtn = ({ taskId, calendarEventId }) => {
+    const [status, setStatus] = React.useState(calendarEventId ? 'added' : 'idle'); // idle, loading, added, error
+
+    const handleAdd = async (e) => {
+        e.stopPropagation(); // Prevent opening task detail if we had one
+        if (status === 'added') return;
+        
+        try {
+            setStatus('loading');
+            const res = await api.addToCalendar(taskId);
+            if (res.success) {
+                setStatus('added');
+                if (res.calendar_event_link) {
+                    window.open(res.calendar_event_link, '_blank');
+                }
+            } else {
+                setStatus('error'); // or 'idle' if we want to retry
+                console.warn(res.message);
+            }
+        } catch (err) {
+            console.error(err);
+            setStatus('error');
+        }
+    };
+
+    if (status === 'added') {
+        return (
+            <div className={styles.metaItem} style={{ color: 'var(--success)', cursor: 'default' }} title="Added to Google Calendar">
+                <Calendar size={12} />
+                <span>Added</span>
+            </div>
+        );
+    }
+
+    return (
+        <button 
+            className={`${styles.metaItem} ${styles.actionBtn}`} 
+            onClick={handleAdd}
+            disabled={status === 'loading'}
+            style={{ 
+                background: 'none', 
+                border: 'none', 
+                padding: 0, 
+                color: status === 'error' ? 'var(--danger)' : 'var(--primary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+            }}
+            title="Add to Google Calendar"
+        >
+            <Calendar size={12} />
+            <span style={{ textDecoration: 'underline' }}>
+                {status === 'loading' ? 'Adding...' : status === 'error' ? 'Retry' : 'Add to Calendar'}
+            </span>
+        </button>
     );
 };
 

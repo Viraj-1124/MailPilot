@@ -344,6 +344,7 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
                                                     Due: {new Date(task.deadline).toLocaleString()}
                                                 </div>
                                             )}
+                                            <AddToCalendarBtn taskId={task.id} calendarEventId={task.calendar_event_id} />
                                         </div>
                                     </div>
                                 ))}
@@ -419,6 +420,63 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
                 </>
             )}
         </div>
+    );
+};
+
+const AddToCalendarBtn = ({ taskId, calendarEventId }) => {
+    const [status, setStatus] = React.useState(calendarEventId ? 'added' : 'idle');
+
+    const handleAdd = async (e) => {
+        e.stopPropagation();
+        if (status === 'added') return;
+
+        try {
+            setStatus('loading');
+            const res = await api.addToCalendar(taskId);
+            if (res.success) {
+                setStatus('added');
+                if (res.calendar_event_link) {
+                    window.open(res.calendar_event_link, '_blank');
+                }
+            } else {
+                setStatus('error');
+                console.warn(res.message);
+            }
+        } catch (err) {
+            console.error(err);
+            setStatus('error');
+        }
+    };
+
+    if (status === 'added') {
+        return (
+            <div className={styles.taskMeta} style={{ color: 'var(--success)', marginTop: '4px' }} title="Added to Google Calendar">
+                <Calendar size={12} />
+                <span>Added to Calendar</span>
+            </div>
+        );
+    }
+
+    return (
+        <button
+            className={styles.taskMeta}
+            onClick={handleAdd}
+            disabled={status === 'loading'}
+            style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                color: status === 'error' ? 'var(--danger)' : 'var(--primary)',
+                cursor: 'pointer',
+                marginTop: '4px'
+            }}
+            title="Add to Google Calendar"
+        >
+            <Calendar size={12} />
+            <span style={{ textDecoration: 'underline' }}>
+                {status === 'loading' ? 'Adding...' : status === 'error' ? 'Retry' : 'Add to Calendar'}
+            </span>
+        </button>
     );
 };
 

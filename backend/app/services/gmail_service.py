@@ -24,11 +24,12 @@ SCOPES = [
     "https://www.googleapis.com/auth/gmail.send",
     "openid",
     "https://www.googleapis.com/auth/userinfo.email",
-    "https://www.googleapis.com/auth/userinfo.profile"
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "https://www.googleapis.com/auth/calendar.events"
 ]
 
-def authenticate_gmail(user_email: str):
-    """Authenticate Gmail for a specific user."""
+def get_credentials(user_email: str):
+    """Retrieve and refresh Google OAuth credentials."""
     os.makedirs(settings.TOKENS_DIR, exist_ok=True)
     token_path = f"{settings.TOKENS_DIR}/{user_email}.json"
 
@@ -37,37 +38,61 @@ def authenticate_gmail(user_email: str):
         try:
             with open(token_path, "r") as token:
                 encrypted_data = token.read()
-                # Decrypt data
                 json_data = decrypt_data(encrypted_data)
                 if not json_data:
                     raise ValueError("Decryption returned empty data")
                 
-                # Parse JSON and create credentials
                 info = json.loads(json_data)
+                # Note: This creates a credentials object but doesn't strictly verify 
+                # if the stored token has ALL the scopes in SCOPES list.
                 creds = Credentials.from_authorized_user_info(info, SCOPES)
         except Exception:
-            # If decryption fails or file is corrupt, delete it and force re-login
             print(f"⚠️ Token for {user_email} is invalid/corrupt. Deleting.")
-            os.remove(token_path)
+            try:
+                os.remove(token_path)
+            except:
+                pass
             creds = None
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-            # Re-save refreshed token (encrypted)
-            with open(token_path, 'w') as token:
-                token.write(encrypt_data(creds.to_json()))
-        else:
-            # For server-side rendering, we can't really run local server flow if user is not present.
-            # But the original code had this fallback.
-            flow = InstalledAppFlow.from_client_secrets_file(settings.CREDENTIALS_FILE, SCOPES)
-            creds = flow.run_local_server(port=0)
-            
-            # Save new token (encrypted)
-            with open(token_path, 'w') as token:
-                token.write(encrypt_data(creds.to_json()))
+            try:
+                creds.refresh(Request())
+                with open(token_path, 'w') as token:
+                    token.write(encrypt_data(creds.to_json()))
+            except Exception as e:
+                print(f"Failed to refresh token: {e}")
+                creds = None
 
+    # Fallback for local testing if no valid creds (legacy logic, kept for safety)
+    if not creds:
+        # If we are failing here in an API context, we should probably raise an error 
+        # rather than popping a browser window on the server, but per existing code:
+        if os.path.exists(settings.CREDENTIALS_FILE): # Only if secrets file exists
+             try:
+                flow = InstalledAppFlow.from_client_secrets_file(settings.CREDENTIALS_FILE, SCOPES)
+                creds = flow.run_local_server(port=0)
+                with open(token_path, 'w') as token:
+                    token.write(encrypt_data(creds.to_json()))
+             except Exception as e:
+                 print(f"Local auth flow failed: {e}")
+                 return None
+
+    return creds
+
+def authenticate_gmail(user_email: str):
+    """Authenticate Gmail service."""
+    creds = get_credentials(user_email)
+    if not creds:
+        return None
     return build('gmail', 'v1', credentials=creds)
+
+def get_calendar_service(user_email: str):
+    """Authenticate Google Calendar service."""
+    creds = get_credentials(user_email)
+    if not creds:
+        return None
+    return build('calendar', 'v3', credentials=creds)
 
 def get_last_24h_emails(service):
     """Fetch emails received in last 24 hours."""
