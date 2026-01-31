@@ -388,7 +388,7 @@ def quick_summary(email_id: str, current_user: User = Depends(get_current_user),
         prompt = f"Summarize this email in 1 very short, actionable sentence (max 15 words). No filler.\n\nSubject: {email.subject}\nBody: {email.body[:1000]}"
         
         summary = safe_chat_completion(
-            model="openai/gpt-4o-mini",
+            model="arcee-ai/trinity-large-preview:free",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=40,
             temperature=0.3

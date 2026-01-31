@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class EmailTaskResponse(BaseModel):
@@ -13,3 +13,8 @@ class EmailTaskResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class EmailTaskExtractionResponse(BaseModel):
+    skipped: bool
+    tasks: List[EmailTaskResponse]
+    reason: Optional[str] = None

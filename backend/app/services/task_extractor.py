@@ -119,7 +119,7 @@ def extract_tasks_from_email(subject: str, body: str) -> dict:
     try:
         # Strict low temperature for consistent JSON
         response = safe_chat_completion(
-            model="openai/gpt-4o-mini",
+            model="arcee-ai/trinity-large-preview:free",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=300,
             temperature=0.1

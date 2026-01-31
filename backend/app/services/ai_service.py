@@ -47,7 +47,7 @@ def summarize_email(subject, body):
     try:
         # Use openai/gpt-4o-mini for OpenRouter
         summary = safe_chat_completion(
-            model="openai/gpt-4o-mini", 
+            model="arcee-ai/trinity-large-preview:free", 
             messages=[{"role": "user", "content": prompt}],
             max_tokens=60,
             temperature=0.3
@@ -91,7 +91,7 @@ def analyze_emails_with_ai(emails):
 
     try:
         raw_output = safe_chat_completion(
-            model="openai/gpt-4o-mini",
+            model="arcee-ai/trinity-large-preview:free",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=1200,
             temperature=0.2
@@ -158,7 +158,7 @@ def categorize_email_with_ai(subject, body, sender=None):
 
     try:
         raw_output = safe_chat_completion(
-            model="openai/gpt-4o-mini",
+            model="arcee-ai/trinity-large-preview:free",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=150,
             temperature=0
@@ -201,7 +201,7 @@ def generate_smart_reply(subject, body, sender, category, tone):
 
     try:
         content = safe_chat_completion(
-            model="openai/gpt-4o-mini",
+            model="arcee-ai/trinity-large-preview:free",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=500,
             temperature=0.4
