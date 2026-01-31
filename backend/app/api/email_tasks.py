@@ -161,3 +161,33 @@ def extract_tasks_on_demand(
         db.rollback()
         print(f"Task persistence failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to save tasks")
+
+
+@router.patch("/tasks/{task_id}/complete", response_model=EmailTaskResponse)
+def toggle_task_completion(
+    task_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Toggle the completion status of a task.
+    """
+    task = db.query(EmailTask).filter(EmailTask.id == task_id).first()
+    
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+        
+    if task.user_email != current_user.email:
+        raise HTTPException(status_code=403, detail="Not authorized to access this task")
+        
+    try:
+        task.completed = not task.completed
+        db.commit()
+        db.refresh(task)
+        return task
+    except Exception as e:
+        db.rollback()
+        import traceback
+        traceback.print_exc()
+        print(f"Task update failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update task: {str(e)}")

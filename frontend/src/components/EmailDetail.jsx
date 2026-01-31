@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../auth/AuthContext';
-import { X, CornerUpLeft, Send, Sparkles, Save, Clock } from 'lucide-react';
+import { X, CornerUpLeft, Send, Sparkles, Save, Clock, ClipboardList, Calendar } from 'lucide-react';
+
 import styles from './EmailDetail.module.css';
 
 const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
@@ -13,10 +14,15 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
     const [generating, setGenerating] = useState(false);
     const [sending, setSending] = useState(false);
     const [toast, setToast] = useState(null);
+    const [tasks, setTasks] = useState(null);
+    const [extracting, setExtracting] = useState(false);
+    const [taskMessage, setTaskMessage] = useState(null);
 
     useEffect(() => {
         if (emailId) {
             setReplyText(''); // Clear previous AI text or drafts
+            setTasks(null);
+            setTaskMessage(null);
             loadEmail();
         }
     }, [emailId]);
@@ -42,6 +48,48 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
             console.error(e);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleExtractTasks = async () => {
+        if (extracting || tasks) return;
+
+        try {
+            setExtracting(true);
+            setTaskMessage(null);
+            const res = await api.extractTasks(emailId);
+
+            if (res.skipped) {
+                setTaskMessage("No actionable tasks detected in this email.");
+                setTasks([]);
+            } else if (res.tasks && res.tasks.length === 0) {
+                setTaskMessage("No tasks found.");
+                setTasks([]);
+            } else {
+                setTasks(res.tasks);
+            }
+        } catch (e) {
+            console.error(e);
+            setTaskMessage("Task extraction failed. Try again.");
+        } finally {
+            setExtracting(false);
+        }
+    };
+
+    const handleToggleTask = async (taskId) => {
+        try {
+            // Optimistic update
+            setTasks(prev => prev.map(t =>
+                t.id === taskId ? { ...t, completed: !t.completed } : t
+            ));
+
+            await api.toggleTaskCompletion(taskId);
+        } catch (e) {
+            console.error(e);
+            // Revert on error
+            setTasks(prev => prev.map(t =>
+                t.id === taskId ? { ...t, completed: !t.completed } : t
+            ));
         }
     };
 
@@ -213,6 +261,49 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
                                     <div key={i} className={styles.attachment}>
                                         <span>📎 {att.filename}</span>
                                         <span className={styles.size}>{Math.round(att.size / 1024)}KB</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+
+                    {/* Tasks Extraction Section */}
+                    <div className={styles.tasksSection}>
+                        <div className={styles.tasksHeader}>
+                            <div className={styles.tasksTitle}>Tasks & Action Items</div>
+                            <button
+                                className={styles.extractBtn}
+                                onClick={handleExtractTasks}
+                                disabled={extracting || (tasks && tasks.length > 0)}
+                            >
+                                <ClipboardList size={16} />
+                                {extracting ? 'Extracting...' : tasks ? 'Tasks Extracted' : 'Extract Tasks'}
+                            </button>
+                        </div>
+
+                        {taskMessage && <div className={styles.emptyTasks}>{taskMessage}</div>}
+
+                        {tasks && tasks.length > 0 && (
+                            <div className={styles.taskList}>
+                                {tasks.map((task) => (
+                                    <div key={task.id} className={`${styles.taskItem} ${task.completed ? styles.completed : ''}`}>
+                                        <div
+                                            className={styles.taskCheckbox}
+                                            onClick={() => handleToggleTask(task.id)}
+                                        >
+                                            {task.completed && <div className={styles.checkedIndicator} />}
+                                        </div>
+
+                                        <div className={styles.taskContent}>
+                                            <div className={styles.taskText}>{task.task_text}</div>
+                                            {task.deadline && (
+                                                <div className={styles.taskMeta}>
+                                                    <Clock size={12} />
+                                                    Due: {new Date(task.deadline).toLocaleString()}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>

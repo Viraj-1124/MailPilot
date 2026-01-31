@@ -5,11 +5,14 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import EmailList from './components/EmailList';
 import Threads from './components/Threads';
-import Search from './components/Search';
+
+import Tasks from './pages/Tasks';
 import Analytics from './components/Analytics';
 import Drafts from './components/Drafts';
 
-// Placeholder components
+import { ToastProvider } from './components/Toast';
+
+// Wrapper components to pass type to EmailList
 const Inbox = () => {
     const { onSelectEmail, onCompose } = useOutletContext() || {};
     return <EmailList type="inbox" onSelectEmail={(id) => onSelectEmail && onSelectEmail(id)} onCompose={onCompose} />;
@@ -30,11 +33,7 @@ const Trash = () => {
     return <EmailList type="trash" onSelectEmail={(id) => onSelectEmail && onSelectEmail(id)} onCompose={onCompose} />;
 };
 
-import { ToastProvider } from './components/Toast';
-
 function App() {
-    // ...
-
     return (
         <AuthProvider>
             <ToastProvider>
@@ -45,7 +44,9 @@ function App() {
                             <Route index element={<Inbox />} />
                             <Route path="threads" element={<Threads />} />
 
-                            <Route path="search" element={<Search />} />
+                            {/* Removed Search Route */}
+                            <Route path="tasks" element={<Tasks />} />
+
                             <Route path="analytics" element={<Analytics />} />
                             <Route path="dashboard" element={<Analytics />} />
                             <Route path="drafts" element={<Drafts />} />

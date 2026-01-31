@@ -175,6 +175,25 @@ const EmailList = ({ type = 'inbox', onSelectEmail, onCompose }) => {
                             placeholder="Search emails..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={async (e) => {
+                                if (e.key === 'Enter') {
+                                    if (!searchQuery.trim()) {
+                                        // Empty search -> Reload DB
+                                        loadEmailsFromDB();
+                                        return;
+                                    }
+                                    try {
+                                        setIsLoading(true);
+                                        const results = await api.getSearch(userEmail, searchQuery);
+                                        setEmails(results);
+                                    } catch (err) {
+                                        console.error(err);
+                                        setIsError(true);
+                                    } finally {
+                                        setIsLoading(false);
+                                    }
+                                }
+                            }}
                             style={{
                                 width: '100%',
                                 padding: '0.6rem 1rem 0.6rem 2.5rem', // Left padding for icon
@@ -226,15 +245,6 @@ const EmailList = ({ type = 'inbox', onSelectEmail, onCompose }) => {
                     </div>
                 ) : (
                     emails
-                        .filter(email => {
-                            if (!searchQuery) return true;
-                            const q = searchQuery.toLowerCase();
-                            return (
-                                (email.subject && email.subject.toLowerCase().includes(q)) ||
-                                (email.from && email.from.toLowerCase().includes(q)) ||
-                                (email.summary && email.summary.toLowerCase().includes(q))
-                            );
-                        })
                         .map((email) => {
                             // Helper to extract clean name
                             const getSenderName = (from) => {

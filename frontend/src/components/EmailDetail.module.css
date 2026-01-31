@@ -178,3 +178,127 @@
     text-decoration: underline;
     font-weight: bold;
 }
+
+/* Tasks UI */
+.tasksSection {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border);
+}
+
+.tasksHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.tasksTitle {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-main);
+}
+
+.extractBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.extractBtn:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.extractBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.taskList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.taskItem {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    align-items: flex-start;
+}
+
+.taskIcon {
+    color: var(--primary);
+    margin-top: 2px;
+}
+
+.taskContent {
+    flex: 1;
+}
+
+.taskText {
+    font-size: 0.95rem;
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+
+.taskMeta {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.emptyTasks {
+    color: var(--text-tertiary);
+    font-style: italic;
+    font-size: 0.9rem;
+    padding: 8px 0;
+}
+
+.completed {
+    opacity: 0.6;
+    background: var(--bg-item-read);
+}
+
+.completed .taskText {
+    text-decoration: line-through;
+    color: var(--text-tertiary);
+}
+
+.taskCheckbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--text-tertiary);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.taskCheckbox:hover {
+    border-color: var(--primary);
+}
+
+.checkedIndicator {
+    width: 10px;
+    height: 10px;
+    background: var(--primary);
+    border-radius: 2px;
+}

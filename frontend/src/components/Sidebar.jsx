@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Inbox, FileText, Send, PieChart, LogOut, Layers, Search as SearchIcon, Archive, Trash2 } from 'lucide-react';
+import { Inbox, FileText, Send, PieChart, LogOut, Layers, Archive, Trash2, ClipboardList } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import styles from './Sidebar.module.css';
 
@@ -10,7 +10,7 @@ const Sidebar = () => {
     const navItems = [
         { to: '/', icon: Inbox, label: 'Inbox', end: true },
         { to: '/threads', icon: Layers, label: 'Threads' },
-        { to: '/search', icon: SearchIcon, label: 'Search' },
+        { to: '/tasks', icon: ClipboardList, label: 'Tasks' }, // Reusing FileText (or different icon)
         { to: '/drafts', icon: FileText, label: 'Drafts' },
         { to: '/sent', icon: Send, label: 'Sent' },
         { to: '/archive', icon: Archive, label: 'Archive' },

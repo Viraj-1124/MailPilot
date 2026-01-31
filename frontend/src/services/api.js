@@ -116,4 +116,10 @@ export const api = {
     }),
 
     getQuickSummary: (emailId) => request(`/email/${emailId}/quick-summary`, { method: 'POST' }),
+
+    extractTasks: (emailId) => request(`/emails/${emailId}/extract-tasks`, { method: 'POST' }),
+
+    toggleTaskCompletion: (taskId) => request(`/tasks/${taskId}/complete`, { method: 'PATCH' }),
+
+    getUserTasks: (userEmail) => request(`/tasks?user_email=${userEmail}`),
 };
