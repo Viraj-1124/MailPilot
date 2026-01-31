@@ -1,0 +1,33 @@
+# Google APIs
+google-api-python-client
+google-auth
+google-auth-oauthlib
+
+# Web scraping / parsing
+requests
+beautifulsoup4
+lxml
+
+# AI / NLP
+openai
+scikit-learn
+numpy
+scipy
+
+# Backend
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+
+# Database
+sqlalchemy
+
+# Scheduling
+apscheduler
+
+# Environment variables
+python-dotenv
+pyjwt
+cryptography
+

@@ -1,0 +1,180 @@
+.panel {
+    width: 600px;
+    height: 100%;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    /* Static by default for Split View on Desktop */
+    flex-shrink: 0;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@media (max-width: 1200px) {
+    .panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        max-width: 600px;
+        animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: -10px 0 25px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border);
+}
+
+.headerControls {
+    display: flex;
+    justify-content: space-between;
+}
+
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-xl);
+}
+
+.subject {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.3;
+}
+
+.sender {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--border);
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.senderInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.name {
+    font-weight: 600;
+}
+
+.to {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+}
+
+.body {
+    line-height: 1.6;
+    color: var(--text-main);
+    white-space: pre-wrap;
+}
+
+.replySection {
+    padding: var(--spacing-md);
+    background: var(--bg-subtle);
+    border-top: 1px solid var(--border);
+}
+
+.aiControls {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+.toneSelect {
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+
+.aiBtn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.replyInput {
+    width: 100%;
+    height: 100px;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    margin-bottom: var(--spacing-md);
+    resize: vertical;
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+.sendBtn {
+    background: var(--primary);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.sendBtn:disabled {
+    opacity: 0.5;
+}
+
+.draftBtn {
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.toast {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.undoLink {
+    color: var(--primary-light);
+    text-decoration: underline;
+    font-weight: bold;
+}
