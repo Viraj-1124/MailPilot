@@ -88,3 +88,17 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class EmailTask(Base):
+    """Store action items extracted from emails."""
+    __tablename__ = "email_tasks"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    email_id = Column(String, ForeignKey("emails.email_id"), index=True)
+    user_email = Column(String, index=True)
+    task_text = Column(String, nullable=False)
+    deadline = Column(DateTime, nullable=True)
+    source = Column(String, default="ai")
+    created_at = Column(DateTime, server_default=func.now())
+    completed = Column(Boolean, default=False)
