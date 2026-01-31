@@ -9,6 +9,7 @@ import Threads from './components/Threads';
 import Tasks from './pages/Tasks';
 import Analytics from './components/Analytics';
 import Drafts from './components/Drafts';
+import Profile from './components/Profile';
 
 import { ToastProvider } from './components/Toast';
 
@@ -47,8 +48,11 @@ function App() {
                             {/* Removed Search Route */}
                             <Route path="tasks" element={<Tasks />} />
 
-                            <Route path="analytics" element={<Analytics />} />
-                            <Route path="dashboard" element={<Analytics />} />
+                            <Route path="profile" element={<Profile />} />
+                            <Route path="dashboard" element={<Profile />} />
+                            {/* Redirect /analytics to /profile or keep as alias */}
+                            <Route path="analytics" element={<Profile />} />
+
                             <Route path="drafts" element={<Drafts />} />
                             <Route path="sent" element={<Sent />} />
                             <Route path="archive" element={<Archive />} />

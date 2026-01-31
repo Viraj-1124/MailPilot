@@ -129,4 +129,23 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ reminder_time: reminderTime })
     }),
+
+    // Personalization
+    getPreferences: () => request('/user/preferences'),
+
+    savePreferences: (data) => request('/user/preferences', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    }),
+
+    getSenderRules: () => request('/user/sender-rules'),
+
+    saveSenderRule: (data) => request('/user/sender-rules', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    }),
+
+    deleteSenderRule: (ruleId) => request(`/user/sender-rules/${ruleId}`, {
+        method: 'DELETE'
+    }),
 };

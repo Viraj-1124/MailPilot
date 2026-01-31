@@ -39,7 +39,7 @@ def auto_fetch_emails():
 
             for msg in messages:
                 try:
-                    sender, subject, preview, full_body, thread_id, attachments, timestamp = get_email_details(service, msg["id"])
+                    sender, subject, preview, full_body, thread_id, attachments, timestamp, is_read = get_email_details(service, msg["id"])
                     summary = summarize_email(subject, full_body)
                     category = smart_categorize_email(subject, full_body, sender)
                     smart_thread_id = assign_smart_thread_id(db, user_email, subject)
@@ -71,33 +71,46 @@ def auto_fetch_emails():
                     # Handle Auto-Reply Rule
                     reply_rule = get_auto_reply_rule(sender, sender_rules)
                     if reply_rule:
-                        print(f"🤖 Auto-reply triggered for {sender}")
-                        try:
-                            reply_content = generate_smart_reply(
-                                subject=subject,
-                                body=full_body,
-                                sender=sender,
-                                category=category,
-                                tone="Professional"
-                            )
-                            # Send via Gmail
-                            send_email_via_gmail(
-                                user_email=user_email,
-                                to_email=sender,
-                                subject=reply_content.get("subject", f"Re: {subject}"),
-                                body=reply_content.get("body", "Received.")
-                            )
-                            # Prepare log record (optional, simplified here)
-                            crud.save_reply(
-                                db=db,
-                                email_id=msg["id"],
-                                user_email=user_email,
-                                reply_text=reply_content.get("body", ""),
-                                tone="Professional",
-                                is_auto=True
-                            )
-                        except Exception as ar_e:
-                            print(f"Failed to auto-reply: {ar_e}")
+                        # Check if already replied
+                        existing_reply = db.query(crud.EmailReply).filter(
+                            crud.EmailReply.email_id == msg["id"],
+                            crud.EmailReply.is_auto == True
+                        ).first()
+
+                        if not existing_reply:
+                            print(f"🤖 Auto-reply triggered for {sender}")
+                            try:
+                                reply_content = generate_smart_reply(
+                                    subject=subject,
+                                    body=full_body,
+                                    sender=sender,
+                                    category=category,
+                                    tone="Professional"
+                                )
+                                # Clean sender email for "To" field
+                                to_email = sender.split("<")[-1].replace(">", "").strip()
+
+                                # Send via Gmail
+                                send_email_via_gmail(
+                                    user_email=user_email,
+                                    to_email=to_email,
+                                    subject=reply_content.get("subject", f"Re: {subject}"),
+                                    body=reply_content.get("body", "Received.")
+                                )
+                                # Record reply
+                                crud.save_reply(
+                                    db=db,
+                                    email_id=msg["id"],
+                                    user_email=user_email,
+                                    reply_text=reply_content.get("body", ""),
+                                    tone="Professional",
+                                    is_auto=True
+                                )
+                            except Exception as ar_e:
+                                print(f"Failed to auto-reply: {ar_e}")
+                        else:
+                            # print(f"Skipping auto-reply for {msg['id']}, already sent.")
+                            pass
 
                 except Exception as e:
                     print(f"Error processing message {msg['id']}: {e}")

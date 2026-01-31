@@ -138,3 +138,24 @@ def get_sender_rules(
     """
     rules = db.query(SenderRule).filter(SenderRule.user_email == current_user.email).all()
     return rules
+
+@router.delete("/sender-rules/{rule_id}")
+def delete_sender_rule(
+    rule_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a sender rule by ID.
+    """
+    rule = db.query(SenderRule).filter(
+        SenderRule.id == rule_id,
+        SenderRule.user_email == current_user.email
+    ).first()
+
+    if not rule:
+        raise HTTPException(status_code=404, detail="Rule not found")
+
+    db.delete(rule)
+    db.commit()
+    return {"success": True, "message": "Rule deleted"}

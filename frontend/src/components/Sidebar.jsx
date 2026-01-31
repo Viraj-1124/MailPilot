@@ -15,7 +15,8 @@ const Sidebar = () => {
         { to: '/sent', icon: Send, label: 'Sent' },
         { to: '/archive', icon: Archive, label: 'Archive' },
         { to: '/trash', icon: Trash2, label: 'Trash' },
-        { to: '/analytics', icon: PieChart, label: 'Analytics' },
+
+        { to: '/profile', icon: PieChart, label: 'Profile' }, // Reusing PieChart or use User logic
     ];
 
     return (

@@ -3,11 +3,12 @@ from sqlalchemy.orm import Session
 from typing import List
 from app.database.database import get_db
 from app.database import crud
-from app.database.models import Email, EmailAttachment, UserSummary
+from app.database.models import Email, EmailAttachment, UserSummary, UserPreference, SenderRule, EmailReply
 from app.schemas.email import EmailListResponse, EmailDetail, SmartThread, ThreadGroup
-from app.services.gmail_service import authenticate_gmail, get_last_24h_emails, get_email_details
-from app.services.ai_service import summarize_email, analyze_emails_with_ai, smart_categorize_email
+from app.services.gmail_service import authenticate_gmail, get_last_24h_emails, get_email_details, send_email_via_gmail
+from app.services.ai_service import summarize_email, analyze_emails_with_ai, smart_categorize_email, generate_smart_reply
 from app.services.thread_service import assign_smart_thread_id
+from app.services.priority_service import resolve_email_priority, get_auto_reply_rule
 from app.core.config import settings
 import os
 from app.api.deps import get_current_user
@@ -32,6 +33,10 @@ def fetch_emails(current_user: User = Depends(get_current_user), db: Session = D
     if not messages:
         return {"overall_summary": "No new emails in last 24 hours", "emails": []}
 
+    # Fetch User Preferences & Rules
+    user_pref = db.query(UserPreference).filter(UserPreference.user_email == user_email).first()
+    sender_rules = db.query(SenderRule).filter(SenderRule.user_email == user_email).all()
+
     emails = []
     new_emails_count = 0
     
@@ -43,6 +48,7 @@ def fetch_emails(current_user: User = Depends(get_current_user), db: Session = D
             continue
 
         new_emails_count += 1
+        # Fix unpacking here too
         sender, subject, preview, full_body, thread_id, attachments, timestamp, is_read = get_email_details(
         service, msg["id"])
         
@@ -76,6 +82,49 @@ def fetch_emails(current_user: User = Depends(get_current_user), db: Session = D
             timestamp=timestamp,
             is_read=is_read
         )
+
+        # Handle Auto-Reply Rule
+        reply_rule = get_auto_reply_rule(sender, sender_rules)
+        if reply_rule:
+            # Check if already replied
+            existing_reply = db.query(EmailReply).filter(
+                EmailReply.email_id == msg["id"],
+                EmailReply.is_auto == True
+            ).first()
+
+            if not existing_reply:
+                print(f"🤖 Auto-reply triggered for {sender}")
+                try:
+                    reply_content = generate_smart_reply(
+                        subject=subject,
+                        body=full_body,
+                        sender=sender,
+                        category=category,
+                        tone="Professional"
+                    )
+                    
+                    # Clean sender email for "To" field
+                    to_email = sender.split("<")[-1].replace(">", "").strip()
+
+                    # Send via Gmail
+                    send_email_via_gmail(
+                        user_email=user_email,
+                        to_email=to_email,
+                        subject=reply_content.get("subject", f"Re: {subject}"),
+                        body=reply_content.get("body", "Received.")
+                    )
+                    # Record reply
+                    crud.save_reply(
+                        db=db,
+                        email_id=msg["id"],
+                        user_email=user_email,
+                        reply_text=reply_content.get("body", ""),
+                        tone="Professional",
+                        is_auto=True
+                    )
+                except Exception as ar_e:
+                    print(f"Failed to auto-reply: {ar_e}")
+
     
     # Only run analysis if we actually fetched new emails
     if emails:
@@ -83,7 +132,18 @@ def fetch_emails(current_user: User = Depends(get_current_user), db: Session = D
 
         for email in emails:
             match = next((p for p in ai_data.get("priorities", []) if p["subject"] == email["subject"]), None)
-            final_priority = match["priority"] if match else "Medium"
+            ai_priority = match["priority"] if match else "Medium"
+            
+            # Resolve Final Priority using Personalization
+            final_priority = resolve_email_priority(
+                sender=email["from"],
+                subject=email["subject"],
+                body=email["summary"],
+                ai_priority=ai_priority,
+                user_pref=user_pref,
+                sender_rules=sender_rules
+            )
+
             email["priority"] = final_priority
             crud.update_email_priority(db, email["email_id"], final_priority)
 

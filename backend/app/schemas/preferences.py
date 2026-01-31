@@ -17,7 +17,7 @@ class UserPreferenceResponse(UserPreferenceBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Sender Rule Schemas
 class SenderRuleBase(BaseModel):
@@ -34,4 +34,4 @@ class SenderRuleResponse(SenderRuleBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
