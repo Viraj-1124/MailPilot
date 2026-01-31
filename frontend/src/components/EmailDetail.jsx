@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../auth/AuthContext';
-import { X, ArrowLeft, CornerUpLeft, Send, Sparkles, Save, Clock, ClipboardList, Calendar } from 'lucide-react';
+import { X, ArrowLeft, CornerUpLeft, Send, Sparkles, Save, Clock, ClipboardList, Calendar, Bell } from 'lucide-react';
 
 import styles from './EmailDetail.module.css';
 
@@ -344,7 +344,10 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
                                                     Due: {new Date(task.deadline).toLocaleString()}
                                                 </div>
                                             )}
-                                            <AddToCalendarBtn taskId={task.id} calendarEventId={task.calendar_event_id} />
+                                            <div style={{ display: 'flex', gap: '12px' }}>
+                                                <AddToCalendarBtn taskId={task.id} calendarEventId={task.calendar_event_id} />
+                                                <SetReminderBtn taskId={task.id} existingReminderTime={task.reminder_time} />
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -477,6 +480,77 @@ const AddToCalendarBtn = ({ taskId, calendarEventId }) => {
                 {status === 'loading' ? 'Adding...' : status === 'error' ? 'Retry' : 'Add to Calendar'}
             </span>
         </button>
+    );
+};
+
+const SetReminderBtn = ({ taskId, existingReminderTime }) => {
+    const [status, setStatus] = React.useState(existingReminderTime ? 'set' : 'idle');
+    const [reminderTime, setReminderTime] = React.useState(existingReminderTime);
+    const inputRef = React.useRef(null);
+
+    const handleDateChange = async (e) => {
+        const dateStr = e.target.value;
+        if (!dateStr) return;
+
+        try {
+            setStatus('loading');
+            const res = await api.setTaskReminder(taskId, new Date(dateStr).toISOString());
+            if (res.success) {
+                setStatus('set');
+                setReminderTime(res.reminder_time);
+            } else {
+                setStatus('error');
+            }
+        } catch (err) {
+            console.error(err);
+            setStatus('error');
+        }
+    };
+
+    const handleClick = (e) => {
+        e.stopPropagation();
+        if (inputRef.current) {
+            inputRef.current.showPicker();
+        }
+    };
+
+    if (status === 'set') {
+        return (
+            <div className={styles.taskMeta} style={{ color: 'var(--text-secondary)', marginTop: '4px' }} title={`Reminder set for ${new Date(reminderTime).toLocaleString()}`}>
+                <Bell size={12} fill="var(--warning)" color="var(--warning)" />
+                <span>{new Date(reminderTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+        );
+    }
+
+    return (
+        <>
+            <button
+                className={styles.taskMeta}
+                onClick={handleClick}
+                disabled={status === 'loading'}
+                style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: status === 'error' ? 'var(--danger)' : 'var(--text-tertiary)',
+                    cursor: 'pointer',
+                    marginTop: '4px'
+                }}
+                title="Set Reminder"
+            >
+                <Bell size={12} />
+                <span style={{ textDecoration: 'underline' }}>
+                    {status === 'loading' ? 'Setting...' : 'Set Reminder'}
+                </span>
+            </button>
+            <input
+                type="datetime-local"
+                ref={inputRef}
+                style={{ visibility: 'hidden', position: 'absolute', width: 0, height: 0 }}
+                onChange={handleDateChange}
+            />
+        </>
     );
 };
 

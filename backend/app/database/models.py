@@ -103,3 +103,29 @@ class EmailTask(Base):
     created_at = Column(DateTime, server_default=func.now())
     completed = Column(Boolean, default=False)
     calendar_event_id = Column(String, nullable=True)
+    reminder_time = Column(DateTime, nullable=True)
+    reminder_sent = Column(Boolean, default=False)
+
+
+class UserPreference(Base):
+    """Store user-specific preferences for personalization."""
+    __tablename__ = "user_preferences"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String, unique=True, index=True, nullable=False)
+    primary_role = Column(String, nullable=True)  # e.g. "Software Engineer", "Student"
+    interests = Column(String, nullable=True)     # stored as JSON string or comma-separated
+    about_user = Column(String, nullable=True)    # Free text for context
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class SenderRule(Base):
+    """Rules for handling emails from specific senders."""
+    __tablename__ = "sender_rules"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String, index=True, nullable=False)
+    sender_email = Column(String, index=True, nullable=False)
+    force_priority = Column(String, nullable=True)  # "High", "Medium", "Low"
+    auto_reply = Column(Boolean, default=False)
+    created_at = Column(DateTime, server_default=func.now())

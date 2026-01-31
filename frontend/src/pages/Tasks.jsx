@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../auth/AuthContext';
-import { Check, Clock, Mail, Calendar, ClipboardList, CheckCircle2 } from 'lucide-react';
+import { Check, Clock, Mail, Calendar, ClipboardList, CheckCircle2, Bell } from 'lucide-react';
 import styles from './Tasks.module.css';
 import SkeletonTask from '../components/SkeletonTask';
 
@@ -139,7 +139,8 @@ const TaskItem = ({ task, onToggle }) => {
                             AI Extracted
                         </div>
                     )}
-                     <AddToCalendarBtn taskId={task.id} calendarEventId={task.calendar_event_id} />
+                    <AddToCalendarBtn taskId={task.id} calendarEventId={task.calendar_event_id} />
+                    <SetReminderBtn taskId={task.id} existingReminderTime={task.reminder_time} />
                 </div>
             </div>
         </div>
@@ -152,7 +153,7 @@ const AddToCalendarBtn = ({ taskId, calendarEventId }) => {
     const handleAdd = async (e) => {
         e.stopPropagation(); // Prevent opening task detail if we had one
         if (status === 'added') return;
-        
+
         try {
             setStatus('loading');
             const res = await api.addToCalendar(taskId);
@@ -181,14 +182,14 @@ const AddToCalendarBtn = ({ taskId, calendarEventId }) => {
     }
 
     return (
-        <button 
-            className={`${styles.metaItem} ${styles.actionBtn}`} 
+        <button
+            className={`${styles.metaItem} ${styles.actionBtn}`}
             onClick={handleAdd}
             disabled={status === 'loading'}
-            style={{ 
-                background: 'none', 
-                border: 'none', 
-                padding: 0, 
+            style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
                 color: status === 'error' ? 'var(--danger)' : 'var(--primary)',
                 cursor: 'pointer',
                 display: 'flex',
@@ -202,6 +203,80 @@ const AddToCalendarBtn = ({ taskId, calendarEventId }) => {
                 {status === 'loading' ? 'Adding...' : status === 'error' ? 'Retry' : 'Add to Calendar'}
             </span>
         </button>
+    );
+};
+
+const SetReminderBtn = ({ taskId, existingReminderTime }) => {
+    const [status, setStatus] = React.useState(existingReminderTime ? 'set' : 'idle');
+    const [reminderTime, setReminderTime] = React.useState(existingReminderTime);
+    const inputRef = React.useRef(null);
+
+    const handleDateChange = async (e) => {
+        const dateStr = e.target.value;
+        if (!dateStr) return;
+
+        try {
+            setStatus('loading');
+            const res = await api.setTaskReminder(taskId, new Date(dateStr).toISOString());
+            if (res.success) {
+                setStatus('set');
+                setReminderTime(res.reminder_time);
+            } else {
+                setStatus('error');
+            }
+        } catch (err) {
+            console.error(err);
+            setStatus('error');
+        }
+    };
+
+    const handleClick = (e) => {
+        e.stopPropagation();
+        if (inputRef.current) {
+            inputRef.current.showPicker();
+        }
+    };
+
+    if (status === 'set') {
+        return (
+            <div className={styles.metaItem} style={{ color: 'var(--text-secondary)', cursor: 'default' }} title={`Reminder set for ${new Date(reminderTime).toLocaleString()}`}>
+                <Bell size={12} fill="var(--warning)" color="var(--warning)" />
+                <span>{new Date(reminderTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+        );
+    }
+
+    return (
+        <>
+            <button
+                className={`${styles.metaItem} ${styles.actionBtn}`}
+                onClick={handleClick}
+                disabled={status === 'loading'}
+                style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: status === 'error' ? 'var(--danger)' : 'var(--text-tertiary)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                }}
+                title="Set Reminder"
+            >
+                <Bell size={12} />
+                <span style={{ textDecoration: 'underline' }}>
+                    {status === 'loading' ? 'Setting...' : 'Set Reminder'}
+                </span>
+            </button>
+            <input
+                type="datetime-local"
+                ref={inputRef}
+                style={{ visibility: 'hidden', position: 'absolute', width: 0, height: 0 }}
+                onChange={handleDateChange}
+                onClick={(e) => e.stopPropagation()}
+            />
+        </>
     );
 };
 

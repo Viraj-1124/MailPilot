@@ -124,4 +124,9 @@ export const api = {
     getUserTasks: (userEmail) => request(`/tasks?user_email=${userEmail}`),
 
     addToCalendar: (taskId) => request(`/tasks/${taskId}/add-to-calendar`, { method: 'POST' }),
+
+    setTaskReminder: (taskId, reminderTime) => request(`/tasks/${taskId}/set-reminder`, {
+        method: 'POST',
+        body: JSON.stringify({ reminder_time: reminderTime })
+    }),
 };

@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from app.database.database import get_db
 from app.database.models import EmailTask, Email, User
 from app.schemas.task import EmailTaskResponse, EmailTaskExtractionResponse
 from app.api.deps import get_current_user
 from app.services.task_extractor import should_extract_tasks, extract_tasks_from_email
-from dateutil import parser  
+from dateutil import parser
+from pydantic import BaseModel  
 router = APIRouter()
 
 @router.get("/tasks", response_model=List[EmailTaskResponse])
@@ -279,3 +280,46 @@ def add_task_to_calendar(
              )
              
         raise HTTPException(status_code=500, detail=f"Failed to add to calendar: {str(e)}")
+
+
+class ReminderRequest(BaseModel):
+    reminder_time: datetime
+
+@router.post("/tasks/{task_id}/set-reminder")
+def set_task_reminder(
+    task_id: int,
+    request: ReminderRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Set a reminder for a specific task.
+    """
+    task = db.query(EmailTask).filter(EmailTask.id == task_id).first()
+    
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+        
+    if task.user_email != current_user.email:
+        raise HTTPException(status_code=403, detail="Not authorized to access this task")
+
+    now = datetime.now(timezone.utc)
+    reminder_dt = request.reminder_time
+    
+    # Ensure reminder_dt is aware. If naive, assume UTC.
+    if reminder_dt.tzinfo is None:
+        reminder_dt = reminder_dt.replace(tzinfo=timezone.utc)
+
+    if reminder_dt <= now:
+        raise HTTPException(status_code=400, detail="Reminder time must be in the future")
+
+    try:
+        task.reminder_time = request.reminder_time
+        task.reminder_sent = False
+        db.commit()
+        db.refresh(task)
+        return {"success": True, "reminder_time": task.reminder_time}
+    except Exception as e:
+        db.rollback()
+        print(f"Failed to set reminder: {e}")
+        raise HTTPException(status_code=500, detail="Failed to set reminder")

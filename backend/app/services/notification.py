@@ -6,9 +6,9 @@ from dotenv import load_dotenv
 load_dotenv()
 NOTIFICATION_TOPIC=os.getenv("NOTIFICATION_TOPIC")
 
-def send_notification(summary: str):
+def send_notification(summary: str, title: str = "High Alert Emails"):
     headers={
-        "Title":"High Alert Emails"
+        "Title": title
     }
 
 
