@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.sheduler import start_scheduler
 from app.database.database import Base, engine
-from app.api import auth, emails, replies, feedback, analytics, categories
+from app.api import auth, emails, replies, feedback, analytics, categories, email_tasks
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -78,6 +78,7 @@ app.include_router(replies.router, tags=["Replies"])
 app.include_router(feedback.router, tags=["Feedback"])
 app.include_router(analytics.router, tags=["Analytics"])
 app.include_router(categories.router, tags=["Categories"])
+app.include_router(email_tasks.router, tags=["Tasks"])
 
 @app.get("/")
 def root():
