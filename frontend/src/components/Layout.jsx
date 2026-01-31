@@ -40,18 +40,18 @@ const Layout = () => {
                     refreshKey: refreshKey,
                     triggerRefresh: triggerRefresh
                 }} />
+                {selectedEmailId && (
+                    <EmailDetail
+                        emailId={selectedEmailId}
+                        onClose={() => setSelectedEmailId(null)}
+                        onCompose={handleCompose}
+                        onActionComplete={() => {
+                            triggerRefresh();
+                            setSelectedEmailId(null);
+                        }}
+                    />
+                )}
             </main>
-            {selectedEmailId && (
-                <EmailDetail
-                    emailId={selectedEmailId}
-                    onClose={() => setSelectedEmailId(null)}
-                    onCompose={handleCompose}
-                    onActionComplete={() => {
-                        triggerRefresh();
-                        setSelectedEmailId(null);
-                    }}
-                />
-            )}
 
             {/* Compose Modal */}
             {isComposeOpen && (

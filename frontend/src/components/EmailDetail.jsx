@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../auth/AuthContext';
-import { X, CornerUpLeft, Send, Sparkles, Save, Clock, ClipboardList, Calendar } from 'lucide-react';
+import { X, ArrowLeft, CornerUpLeft, Send, Sparkles, Save, Clock, ClipboardList, Calendar } from 'lucide-react';
 
 import styles from './EmailDetail.module.css';
 
@@ -188,7 +188,9 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
         <div className={styles.panel}>
             <header className={styles.header}>
                 <div className={styles.headerControls}>
-                    <button onClick={onClose} className={styles.closeBtn}><X size={20} /></button>
+                    <button onClick={onClose} className={styles.closeBtn} title="Back to Inbox">
+                        <ArrowLeft size={20} />
+                    </button>
                     {email && (
                         <div className={styles.meta}>
                             {/* Archive / Unarchive */}
@@ -253,7 +255,46 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
                             </div>
                         </div>
 
-                        <div className={styles.body} dangerouslySetInnerHTML={{ __html: email.body.replace(/\n/g, '<br/>') }} />
+                        <div className={styles.body} dangerouslySetInnerHTML={(() => {
+                            const body = email.body || '';
+                            // Heuristic: If it contains HTML tags, treat as HTML
+                            // (Checking for common tags generally sufficient for this context)
+                            const isHtml = /<[a-z][\s\S]*>/i.test(body);
+
+                            if (isHtml) {
+                                // For HTML, we render as is. 
+                                // Ideally, we would sanitize here if a library was available.
+                                return { __html: body };
+                            } else {
+                                // For Plain Text:
+                                // 1. Escape HTML (prevent XSS from text) - minimal manual handling
+                                let text = body.replace(/&/g, "&amp;")
+                                    .replace(/</g, "&lt;")
+                                    .replace(/>/g, "&gt;")
+                                    .replace(/"/g, "&quot;")
+                                    .replace(/'/g, "&#039;");
+
+                                // 2. Linkify URLs
+                                text = text.replace(
+                                    /(https?:\/\/[^\s]+)/g,
+                                    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+                                );
+
+                                // 3. Preserve line breaks (optional, as CSS pre-wrap handles it, but <br> is safer for innerHTML)
+                                // Only doing this if pre-wrap isn't enough or for mixed content, 
+                                // but with pure text + pre-wrap, newlines render fine. 
+                                // However, keeping <br> ensures consistency if CSS fails or changes.
+                                // For now, let's rely on CSS white-space: pre-wrap; 
+                                // BUT since we are using dangerouslySetInnerHTML, we MUST wrap newlines in <br> 
+                                // because innerHTML doesn't respect \n unless it's in a <pre> tag or style pre-wrap.
+                                // Wait, style is pre-wrap. So \n should work!
+                                // Let's try converting to <br> to be absolutely sure standard email spacing works.
+                                // Gmail often converts plain text \n to <br>.
+                                text = text.replace(/\n/g, '<br/>');
+
+                                return { __html: text };
+                            }
+                        })()} />
 
                         {email.attachments && email.attachments.length > 0 && (
                             <div className={styles.attachments}>

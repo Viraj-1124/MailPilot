@@ -100,6 +100,7 @@ const EmailList = ({ type = 'inbox', onSelectEmail, onCompose }) => {
     if (isError) return <div className={styles.error}>Connection error. Please retry.</div>;
 
     const priorities = ['All', 'High', 'Medium', 'Low'];
+    const filterLabel = priorityFilter !== 'All' ? `${priorityFilter} Priority` : type === 'inbox' ? 'Inbox' : type;
 
     return (
         <div className={styles.container}>
@@ -238,9 +239,12 @@ const EmailList = ({ type = 'inbox', onSelectEmail, onCompose }) => {
                     Array.from({ length: 5 }).map((_, i) => <SkeletonEmail key={i} />)
                 ) : emails.length === 0 ? (
                     <div className={styles.empty}>
-                        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
-                            <p style={{ marginBottom: '0.5rem', fontSize: '1.2rem' }}>📭</p>
-                            <p>No {priorityFilter !== 'All' ? `${priorityFilter} priority` : ''} emails found.</p>
+                        <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--text-tertiary)' }}>
+                            <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>📭</div>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                                Nothing in {filterLabel}
+                            </h3>
+                            <p>No emails found matching your filters.</p>
                         </div>
                     </div>
                 ) : (
