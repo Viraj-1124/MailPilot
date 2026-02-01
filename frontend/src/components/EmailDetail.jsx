@@ -168,18 +168,7 @@ const EmailDetail = ({ emailId, onClose, onCompose, onActionComplete }) => {
     const handleUndo = () => {
         setToast(null);
         setSending(false);
-        // Call backend undo-send if specified? 
-        // Requirement says: "If user clicks Undo: Call POST /undo-send" - implies backend buffers it?
-        // But usually frontend buffers. "Email will be sent in 10s".
-        // If backend endpoint exists for undo, it means we MIGHT send it immediately but with a delay flag?
-        // Checking req: "If not undone: Email is sent via backend".
-        // "If user clicks Undo: Call POST /undo-send".
-        // This implies we send a request FIRST, then undo?
-        // OR we wait. "Email will be sent in 10 seconds". Usually means FE wait.
-        // But if there is a specific /undo-send endpoint, maybe backend holds it?
-        // Let's assume simpler FE wait for now unless I see /undo-send in backend.
-        // Checked server.py -> I do NOT see /undo-send endpoint.
-        // So I will implement purely on frontend.
+        
     };
 
     if (!emailId) return null;

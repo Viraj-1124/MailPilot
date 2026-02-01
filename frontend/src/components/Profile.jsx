@@ -235,9 +235,9 @@ const Profile = () => {
                                         value={newPriority}
                                         onChange={(e) => setNewPriority(e.target.value)}
                                     >
-                                        <option value="High">Force High</option>
-                                        <option value="Medium">Force Medium</option>
-                                        <option value="Low">Force Low</option>
+                                        <option value="High">High</option>
+                                        <option value="Medium">Medium</option>
+                                        <option value="Low">Low</option>
                                     </select>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
